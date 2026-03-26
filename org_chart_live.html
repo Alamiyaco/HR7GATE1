@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الهيكل التنظيمي</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Kufi Arabic',sans-serif;background:#eef2f7;min-height:100vh;padding-bottom:60px}
+.header{background:linear-gradient(135deg,#0d2137 0%,#1a3d5c 40%,#1e5a8a 100%);color:#fff;padding:28px 40px;text-align:center;box-shadow:0 6px 30px rgba(0,0,0,.18)}
+.header h1{font-size:30px;font-weight:800;letter-spacing:.5px}
+.header .sub{font-size:14px;opacity:.65;margin-top:6px}
+.toolbar{display:flex;justify-content:center;align-items:center;gap:16px;padding:14px 20px;background:#fff;border-bottom:1px solid #dde3ea;flex-wrap:wrap}
+.toolbar .refresh-btn{
+  font-family:'Noto Kufi Arabic',sans-serif;padding:8px 20px;border:2px solid #2e7d32;
+  background:#fff;color:#2e7d32;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+  transition:all .2s;display:flex;align-items:center;gap:6px;
+}
+.toolbar .refresh-btn:hover{background:#2e7d32;color:#fff}
+.toolbar .refresh-btn.loading{opacity:.6;pointer-events:none}
+.toolbar .refresh-btn .spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.toolbar .status{font-size:12px;color:#888}
+.toolbar .status.ok{color:#2e7d32}
+.toolbar .status.err{color:#c62828}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#2e7d32;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.stats-row{display:flex;justify-content:center;gap:40px;padding:18px 20px;background:#fff;border-bottom:1px solid #dde3ea;flex-wrap:wrap}
+.stat{text-align:center}.stat-n{font-size:26px;font-weight:800;color:#1a3d5c}.stat-l{font-size:11px;color:#8899aa;margin-top:2px}
+.top-section{display:flex;flex-direction:column;align-items:center;padding:40px 20px 20px}
+.ceo-card{background:linear-gradient(135deg,#0d2137,#1a3d5c);color:#fff;padding:20px 40px;border-radius:14px;text-align:center;box-shadow:0 8px 32px rgba(13,33,55,.35);min-width:280px}
+.ceo-card .pos{font-size:18px;font-weight:800;margin-bottom:4px}.ceo-card .nm{font-size:15px;opacity:.85}
+.cv{width:3px;height:30px;background:#1a3d5c;margin:0 auto}
+.asst-card{background:linear-gradient(135deg,#1a3d5c,#2a6090);color:#fff;padding:14px 30px;border-radius:12px;text-align:center;box-shadow:0 5px 20px rgba(26,61,92,.3);min-width:240px}
+.asst-card .pos{font-size:14px;font-weight:700;margin-bottom:2px}.asst-card .nm{font-size:13px;opacity:.8}
+.dept-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;padding:30px 20px;max-width:1500px;margin:0 auto}
+.dept-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 15px rgba(0,0,0,.07);transition:all .3s;cursor:pointer;width:calc(33.33% - 12px);min-width:300px;max-width:440px;border:2px solid transparent}
+.dept-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.12);transform:translateY(-2px)}
+.dept-card.open{border-color:#1a3d5c;box-shadow:0 6px 24px rgba(26,61,92,.18);width:100%;max-width:100%}
+.dept-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;gap:12px}
+.dhr{display:flex;align-items:center;gap:12px}
+.di{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.din{font-size:15px;font-weight:700;color:#1a3d5c}.dic{font-size:12px;color:#8899aa;margin-top:2px}
+.da{width:28px;height:28px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center;font-size:16px;color:#556;transition:transform .3s;flex-shrink:0}
+.dept-card.open .da{transform:rotate(180deg)}
+.dept-body{max-height:0;overflow:hidden;transition:max-height .5s ease;background:#f4f6f9}
+.dept-card.open .dept-body{max-height:20000px}
+.tree-wrap{padding:24px 16px;overflow-x:auto}
+
+.t-node{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top}
+.t-card{
+  min-width:155px;max-width:200px;padding:14px 14px;border-radius:12px;
+  text-align:center;cursor:pointer;transition:all .2s;position:relative;
+  box-shadow:0 3px 12px rgba(0,0,0,.12);user-select:none;white-space:normal;
+}
+.t-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.t-card.c-mgr{background:linear-gradient(135deg,#1a3d5c,#2a6090);color:#fff}
+.t-card.c-sup{background:linear-gradient(135deg,#2a6090,#4a90c0);color:#fff}
+.t-card.c-emp{background:linear-gradient(135deg,#1a7a3a,#2a9a4a);color:#fff}
+.t-card .cp{font-size:13px;font-weight:700;line-height:1.4}
+.t-card .cn{font-size:11px;opacity:.85;margin-top:3px;line-height:1.3}
+.t-card .cb{font-size:9px;opacity:.55;margin-top:4px;background:rgba(255,255,255,.13);padding:2px 8px;border-radius:4px;display:inline-block}
+.t-card .badge{position:absolute;top:-8px;left:-8px;background:#ff6b35;color:#fff;min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:0 5px;box-shadow:0 2px 6px rgba(255,107,53,.4)}
+.t-card .tbtn{position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);width:26px;height:26px;background:#fff;border:2px solid #bcc5d0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#556;z-index:5;transition:all .15s;font-weight:700}
+.t-card:hover .tbtn{border-color:#1a3d5c;color:#1a3d5c}
+.t-vline{width:2px;height:28px;background:#b0bec5;margin:0 auto;flex-shrink:0}
+.t-children{display:inline-flex;justify-content:center;gap:12px;position:relative;padding-top:28px;flex-wrap:wrap}
+.t-children::before{content:'';position:absolute;top:0;height:2px;background:#b0bec5;right:0;left:0}
+.t-child{display:inline-flex;flex-direction:column;align-items:center;position:relative;vertical-align:top}
+.t-child::before{content:'';position:absolute;top:-28px;left:50%;transform:translateX(-50%);width:2px;height:28px;background:#b0bec5}
+.t-children.single::before{display:none}
+
+.dc-1{background:#1a3d5c}.dc-2{background:#2e7d32}.dc-3{background:#c62828}.dc-4{background:#ef6c00}.dc-5{background:#6a1b9a}.dc-6{background:#00838f}.dc-7{background:#4e342e}.dc-8{background:#1565c0}.dc-9{background:#ad1457}.dc-10{background:#2e7d32}.dc-11{background:#e65100}.dc-12{background:#283593}.dc-13{background:#00695c}.dc-14{background:#bf360c}.dc-15{background:#4a148c}
+
+.search-bar{max-width:500px;margin:0 auto;padding:20px 20px 0}
+.search-bar input{width:100%;padding:12px 18px;border:2px solid #dde3ea;border-radius:12px;font-family:inherit;font-size:14px;outline:none;transition:border .2s;background:#fff}
+.search-bar input:focus{border-color:#1a3d5c}
+.search-bar input::placeholder{color:#aab}
+.search-results{max-width:500px;margin:6px auto 0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);overflow:hidden;display:none;max-height:300px;overflow-y:auto;position:relative;z-index:50}
+.search-results.visible{display:block}
+.sr-item{padding:10px 16px;cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .15s}
+.sr-item:hover{background:#eef2f7}
+.sr-item .sr-name{font-size:14px;font-weight:600;color:#1a3d5c}
+.sr-item .sr-pos{font-size:11px;color:#888}
+
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:#1a3d5c}
+.loading-screen .loader{width:50px;height:50px;border:4px solid #dde3ea;border-top:4px solid #1a3d5c;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
+.loading-screen p{font-size:16px;font-weight:600}
+.error-screen{text-align:center;padding:60px 20px;color:#c62828}
+.error-screen h2{margin-bottom:10px}
+.error-screen p{color:#888;font-size:13px;max-width:500px;margin:0 auto}
+
+@media(max-width:900px){.dept-card{width:100%;max-width:100%}.t-card{min-width:130px;max-width:170px;padding:10px}}
+</style>
+</head>
+<body>
+<div class="header"><h1>الهيكل التنظيمي الإداري</h1><div class="sub">المخطط الهيكلي التنظيمي للشركة — متصل بـ Google Sheet</div></div>
+<div class="toolbar">
+  <button class="refresh-btn" id="refreshBtn" onclick="loadData()"><span id="refreshIcon">🔄</span> تحديث البيانات</button>
+  <span class="status" id="statusText">جاري التحميل...</span>
+  <span style="font-size:12px;color:#aaa" id="lastUpdate"></span>
+</div>
+<div id="mainContent">
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loader"></div>
+    <p>جاري تحميل البيانات من Google Sheet...</p>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1GjFYMDHBmf_ugxci0mecqvq9GBzFmAMI5ENSrmItl3E';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+let DATA = [];
+let nm = {}, cm = {};
+let exp = new Set(), oD = new Set();
+
+// ── CSV Parser ──
+function parseCSV(text) {
+  const rows = [];
+  let current = '', inQuote = false, row = [], i = 0;
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  while (i < text.length) {
+    const c = text[i];
+    if (inQuote) {
+      if (c === '"' && text[i+1] === '"') { current += '"'; i += 2; }
+      else if (c === '"') { inQuote = false; i++; }
+      else { current += c; i++; }
+    } else {
+      if (c === '"') { inQuote = true; i++; }
+      else if (c === ',') { row.push(current.trim()); current = ''; i++; }
+      else if (c === '\n') { row.push(current.trim()); rows.push(row); row = []; current = ''; i++; }
+      else { current += c; i++; }
+    }
+  }
+  if (current || row.length) { row.push(current.trim()); rows.push(row); }
+  return rows;
+}
+
+// ── Fetch Data ──
+async function loadData() {
+  const btn = document.getElementById('refreshBtn');
+  const icon = document.getElementById('refreshIcon');
+  const status = document.getElementById('statusText');
+  
+  btn.classList.add('loading');
+  icon.innerHTML = '<span class="spin">🔄</span>';
+  status.textContent = 'جاري التحميل...';
+  status.className = 'status';
+
+  try {
+    const resp = await fetch(CSV_URL);
+    if (!resp.ok) throw new Error('فشل الاتصال');
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    
+    if (rows.length < 2) throw new Error('الملف فارغ');
+
+    // Parse header
+    const header = rows[0].map(h => h.replace(/\ufeff/g,'').trim().toLowerCase());
+    const iName = header.findIndex(h => h.includes('employee') || h.includes('name') || h.includes('اسم'));
+    const iBranch = header.findIndex(h => h.includes('branch') || h.includes('فرع'));
+    const iDept = header.findIndex(h => h.includes('department') || h.includes('dept') || h.includes('قسم'));
+    const iPos = header.findIndex(h => h.includes('position') || h.includes('منصب') || h.includes('وظيفة'));
+    const iMgr = header.findIndex(h => h.includes('manager') || h.includes('مدير'));
+
+    if (iName < 0 || iDept < 0) throw new Error('أعمدة غير معروفة');
+
+    DATA = [];
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      const name = (row[iName] || '').trim();
+      if (!name) continue;
+      DATA.push({
+        name: name,
+        branch: (row[iBranch] || '').trim(),
+        dept: (row[iDept] || '').trim(),
+        position: (row[iPos] || '').trim(),
+        manager: (row[iMgr] || '').trim() || null
+      });
+    }
+
+    // Handle self-managers
+    DATA.forEach(e => { if (e.manager === e.name) e.manager = null; });
+
+    buildMaps();
+    renderAll();
+
+    status.innerHTML = '<span class="live-dot"></span> متصل — ' + DATA.length + ' موظف';
+    status.className = 'status ok';
+    document.getElementById('lastUpdate').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-IQ');
+
+  } catch (err) {
+    console.error(err);
+    status.textContent = '⚠️ خطأ: ' + err.message;
+    status.className = 'status err';
+    if (!DATA.length) {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="error-screen">
+          <h2>⚠️ تعذر تحميل البيانات</h2>
+          <p>تأكد من أن ملف Google Sheet مشترك كـ "أي شخص لديه الرابط يمكنه العرض"<br><br>
+          اذهب إلى Google Sheet → مشاركة → تغيير إلى "أي شخص لديه الرابط" → مشاهد</p>
+        </div>`;
+    }
+  }
+
+  btn.classList.remove('loading');
+  icon.innerHTML = '🔄';
+}
+
+function buildMaps() {
+  nm = {}; cm = {};
+  DATA.forEach(e => {
+    nm[e.name] = e;
+    if (e.manager && e.manager !== e.name) {
+      if (!cm[e.manager]) cm[e.manager] = [];
+      cm[e.manager].push(e.name);
+    }
+  });
+}
+
+// ── Helpers ──
+const dE = {'الادارة':'🏢','التسويق':'📢','التصميم الداخلي':'🎨','الحسابات':'💰','القانونية':'⚖️','المبيعات الحكومية':'🏛️','المبيعات المباشرة':'🤝','المخازن':'📦','المشتريات':'🛒','المشروع':'📋','الموارد البشرية':'👥','إدارة الجودة':'✅','تكنلوجيا المعلومات':'💻','خدمات ما بعد البيع':'🔧','مبيعات الشركات':'🏪','الادارة العامة':'👔'};
+
+function gL(e) {
+  if (!e) return 'emp';
+  const p = e.position || '';
+  if (p.includes('المدير المفوض') || p.includes('مساعد المدير')) return 'top';
+  if (p.includes('مدير')) return 'mgr';
+  if (p.includes('مشرف') || p.includes('رئيس') || p.includes('مسؤول الصندوق')) return 'sup';
+  return 'emp';
+}
+function cC(e) { const l = gL(e); return l==='top'||l==='mgr' ? 'c-mgr' : l==='sup' ? 'c-sup' : 'c-emp'; }
+
+// ── Render Tree Node ──
+function rN(name) {
+  const e = nm[name]; if (!e) return '';
+  const kids = cm[name] || [];
+  const hk = kids.length > 0;
+  const ie = exp.has(name);
+  const esc = name.replace(/'/g, "\\'");
+
+  let h = '<div class="t-node">';
+  h += `<div class="t-card ${cC(e)}" onclick="tN('${esc}')">`;
+  h += `<div class="cp">${e.position || '—'}</div>`;
+  h += `<div class="cn">${e.name}</div>`;
+  h += `<div class="cb">${e.branch}</div>`;
+  if (hk) {
+    h += `<span class="badge">${kids.length}</span>`;
+    h += `<div class="tbtn">${ie ? '−' : '+'}</div>`;
+  }
+  h += '</div>';
+
+  if (hk && ie) {
+    h += '<div class="t-vline"></div>';
+    h += `<div class="t-children${kids.length === 1 ? ' single' : ''}">`;
+    kids.forEach(k => { h += `<div class="t-child">${rN(k)}</div>`; });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+// ── Get Dept Heads ──
+function gH(dept) {
+  const deptMembers = DATA.filter(e => e.dept === dept);
+  const memberNames = new Set(deptMembers.map(m => m.name));
+  return deptMembers.filter(m => {
+    if (!m.manager || m.manager === m.name) return true;
+    return !memberNames.has(m.manager);
+  });
+}
+
+// ── Render All ──
+function renderAll() {
+  // Find CEO and assistant
+  const ceo = DATA.find(e => !e.manager && e.position && e.position.includes('المدير المفوض'));
+  const asst = DATA.find(e => e.position && (e.position.includes('مساعد المدير') || e.position.includes('مساعد شخصي')));
+
+  // Get departments (excluding الادارة العامة)
+  const deptSet = new Set();
+  DATA.forEach(e => { if (e.dept && e.dept !== 'الادارة العامة') deptSet.add(e.dept); });
+  const dO = [...deptSet].sort();
+  
+  // Count per dept
+  const dM = {};
+  DATA.forEach(e => { if (!dM[e.dept]) dM[e.dept] = []; dM[e.dept].push(e); });
+
+  let html = '';
+  
+  // Stats
+  html += `<div class="stats-row">
+    <div class="stat"><div class="stat-n">${DATA.length}</div><div class="stat-l">إجمالي الموظفين</div></div>
+    <div class="stat"><div class="stat-n">${dO.length}</div><div class="stat-l">الأقسام</div></div>
+    <div class="stat"><div class="stat-n">${DATA.filter(e=>gL(e)==='mgr'||gL(e)==='top').length}</div><div class="stat-l">مدراء</div></div>
+    <div class="stat"><div class="stat-n">${DATA.filter(e=>gL(e)==='sup').length}</div><div class="stat-l">مشرفين</div></div>
+  </div>`;
+
+  // Search
+  html += '<div class="search-bar"><input type="text" id="si" placeholder="🔍 ابحث عن موظف..." oninput="onSearch(this.value)"></div>';
+  html += '<div class="search-results" id="sr"></div>';
+
+  // Top section
+  html += '<div class="top-section">';
+  if (ceo) {
+    html += `<div class="ceo-card"><div class="pos">${ceo.position}</div><div class="nm">${ceo.name}</div></div>`;
+  }
+  if (asst) {
+    html += '<div class="cv"></div>';
+    html += `<div class="asst-card"><div class="pos">${asst.position}</div><div class="nm">${asst.name}</div></div>`;
+  }
+  html += '</div>';
+
+  // Department grid
+  html += '<div class="dept-grid">';
+  dO.forEach((d, i) => {
+    const ms = dM[d] || [];
+    if (!ms.length) return;
+    const io = oD.has(d);
+    const em = dE[d] || '📁';
+    const ci = (i % 15) + 1;
+
+    html += `<div class="dept-card ${io ? 'open' : ''}" id="dp-${i}">`;
+    html += `<div class="dept-header" onclick="tD('${d}')"><div class="dhr"><div class="di dc-${ci}">${em}</div><div><div class="din">${d}</div><div class="dic">${ms.length} موظف</div></div></div><div class="da">▼</div></div>`;
+    html += '<div class="dept-body">';
+    if (io) {
+      html += '<div class="tree-wrap">';
+      const heads = gH(d);
+      if (heads.length === 1) { html += rN(heads[0].name); }
+      else {
+        html += '<div class="t-children">';
+        heads.forEach(x => { html += `<div class="t-child">${rN(x.name)}</div>`; });
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  document.getElementById('mainContent').innerHTML = html;
+  
+  // Store dept order for search
+  window._dO = dO;
+}
+
+// ── Interactions ──
+function tD(d) { if (oD.has(d)) oD.delete(d); else oD.add(d); renderAll(); }
+function tN(n) { if (exp.has(n)) exp.delete(n); else exp.add(n); renderAll(); }
+
+function onSearch(v) {
+  const s = document.getElementById('sr');
+  if (!s || !v || v.length < 2) { if(s) s.classList.remove('visible'); return; }
+  const r = DATA.filter(e => e.name.includes(v) || (e.position && e.position.includes(v)) || e.dept.includes(v)).slice(0, 8);
+  if (!r.length) { s.classList.remove('visible'); return; }
+  s.classList.add('visible');
+  s.innerHTML = r.map(x => `<div class="sr-item" onclick="oE('${x.name.replace(/'/g, "\\'")}')"><div class="sr-name">${x.name}</div><div class="sr-pos">${x.position || ''} — ${x.dept}</div></div>`).join('');
+}
+
+function oE(n) {
+  const e = nm[n]; if (!e) return;
+  const si = document.getElementById('si');
+  const sr = document.getElementById('sr');
+  if (si) si.value = '';
+  if (sr) sr.classList.remove('visible');
+  oD.add(e.dept);
+  let c = e.manager;
+  while (c && c !== n && nm[c]) { exp.add(c); const p = nm[c]; c = (p.manager && p.manager !== p.name) ? p.manager : null; }
+  renderAll();
+  setTimeout(() => {
+    const di = (window._dO || []).indexOf(e.dept);
+    const el = document.getElementById('dp-' + di);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+window.tD = tD;
+window.tN = tN;
+window.onSearch = onSearch;
+window.oE = oE;
+window.loadData = loadData;
+
+// ── Initial Load + Auto Refresh ──
+loadData();
+
+// Auto refresh every 2 minutes
+setInterval(loadData, 120000);
+</script>
+</body>
+</html>
